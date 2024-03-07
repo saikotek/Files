@@ -74,7 +74,7 @@ namespace Files.Core.Utils.CommandLine
 							{
 								command.Type = ParsedCommandType.ExplorerShellCommand;
 							}
-							else if (Path.IsPathRooted(kvp.Value[0]))
+							else if (IsPathValid(kvp.Value[0]))
 							{
 								command.Type = ParsedCommandType.OpenPath;
 							}
@@ -97,6 +97,19 @@ namespace Files.Core.Utils.CommandLine
 			}
 
 			return commands;
+		}
+
+		public static bool IsPathValid(string path)
+		{
+			try
+			{
+				Path.GetFullPath(path);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 
 		/// <summary>

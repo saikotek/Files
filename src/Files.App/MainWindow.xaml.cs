@@ -70,10 +70,11 @@ namespace Files.App
 			SystemBackdrop = new AppSystemBackdrop();
 
 			var rootFrame = EnsureWindowIsInitialized();
-
 			switch (activatedEventArgs)
 			{
 				case ILaunchActivatedEventArgs launchArgs:
+					Debug.WriteLine($"Activation type: ILaunchActivatedEventArgs");
+					Debug.WriteLine($"Arguments: {launchArgs.Arguments}");
 					if (launchArgs.Arguments is not null &&
 						(CommandLineParser.SplitArguments(launchArgs.Arguments, true)[0].EndsWith($"files.exe", StringComparison.OrdinalIgnoreCase)
 						|| CommandLineParser.SplitArguments(launchArgs.Arguments, true)[0].EndsWith($"files", StringComparison.OrdinalIgnoreCase)))
@@ -103,6 +104,7 @@ namespace Files.App
 					break;
 
 				case IProtocolActivatedEventArgs eventArgs:
+					Debug.WriteLine($"Activation type: IProtocolActivatedEventArgs");
 					if (eventArgs.Uri.AbsoluteUri == "files-uwp:")
 					{
 						rootFrame.Navigate(typeof(MainPage), null, new SuppressNavigationTransitionInfo());
@@ -146,10 +148,12 @@ namespace Files.App
 					break;
 
 				case ICommandLineActivatedEventArgs cmdLineArgs:
+					Debug.WriteLine($"Activation type: ICommandLineActivatedEventArgs ");
 					var operation = cmdLineArgs.Operation;
 					var cmdLineString = operation.Arguments;
 					var activationPath = operation.CurrentDirectoryPath;
-
+					Debug.WriteLine($"CmdLineArgs: {cmdLineString}");
+					Debug.WriteLine($"ActivationPath: {activationPath}");
 					var parsedCommands = CommandLineParser.ParseUntrustedCommands(cmdLineString);
 					if (parsedCommands is not null && parsedCommands.Count > 0)
 					{
@@ -162,6 +166,7 @@ namespace Files.App
 					break;
 
 				case IFileActivatedEventArgs fileArgs:
+					Debug.WriteLine($"Activation type: IFileActivatedEventArgs ");
 					var index = 0;
 					if (rootFrame.Content is null || rootFrame.Content is SplashScreenPage || !MainPageViewModel.AppInstances.Any())
 					{
@@ -179,11 +184,13 @@ namespace Files.App
 					break;
 
 				case IStartupTaskActivatedEventArgs startupArgs:
+					Debug.WriteLine($"Activation type: IStartupTaskActivatedEventArgs ");
 					// Just launch the app with no arguments
 					rootFrame.Navigate(typeof(MainPage), null, new SuppressNavigationTransitionInfo());
 					break;
 
 				default:
+					Debug.WriteLine($"Activation type: default");
 					// Just launch the app with no arguments
 					rootFrame.Navigate(typeof(MainPage), null, new SuppressNavigationTransitionInfo());
 					break;
@@ -225,15 +232,28 @@ namespace Files.App
 
 		private async Task InitializeFromCmdLineArgsAsync(Frame rootFrame, ParsedCommands parsedCommands, string activationPath = "")
 		{
+			Debug.WriteLine("Parsed commands: ");
+			foreach(var p in parsedCommands)
+			{
+				Debug.WriteLine($"{p.Type} - {string.Join(",",p.Args)}");
+			}
+
 			async Task PerformNavigationAsync(string payload, string selectItem = null)
 			{
 				if (!string.IsNullOrEmpty(payload))
 				{
 					payload = Constants.UserEnvironmentPaths.ShellPlaces.Get(payload.ToUpperInvariant(), payload);
+					Debug.WriteLine($"Payload: {payload}");
+					Debug.WriteLine($"ActivationPath: {activationPath}");
+					if(!Path.IsPathRooted(payload) && !string.IsNullOrEmpty(activationPath))
+					{
+						payload = Path.GetFullPath(Path.Combine(activationPath, payload));
+					}
 					var folder = (StorageFolder)await FilesystemTasks.Wrap(() => StorageFolder.GetFolderFromPathAsync(payload).AsTask());
 					if (folder is not null && !string.IsNullOrEmpty(folder.Path))
 						payload = folder.Path; // Convert short name to long name (#6190)
 				}
+
 
 				var generalSettingsService = Ioc.Default.GetService<IGeneralSettingsService>();
 				var paneNavigationArgs = new PaneNavigationArguments

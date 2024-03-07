@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "CmdArgs Directory": {
+      "commandName": "Project",
+      "commandLineArgs": "-Directory C:\\Windows\\"
+    }
+  }
+}

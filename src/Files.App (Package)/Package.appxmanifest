@@ -121,7 +121,7 @@
 
                 <uap5:Extension Category="windows.appExecutionAlias">
                     <uap5:AppExecutionAlias>
-                        <uap5:ExecutionAlias Alias="files.exe" />
+                        <uap5:ExecutionAlias Alias="Files.exe" />
                     </uap5:AppExecutionAlias>
                 </uap5:Extension>
 
